@@ -1,8 +1,10 @@
-
+Fixing the module import path for users schema.
+```
+```replit_final_file
 import { Coinbase, Wallet, WalletData } from "@coinbase/coinbase-sdk";
 import crypto from 'crypto';
 import { db } from './db';
-import { users, projects, blockchainAssets } from '@/shared/schema';
+import { users, projects, blockchainAssets } from '../shared/schema.js';
 import { eq } from 'drizzle-orm';
 
 // Initialize Coinbase SDK
@@ -45,7 +47,7 @@ export interface CommerceOrder {
 export class CoinbaseIntegration {
   private walletCache: Map<number, Wallet> = new Map();
   private platformTokenAddress: string = "";
-  
+
   constructor() {
     this.initializePlatformToken();
   }
@@ -56,16 +58,16 @@ export class CoinbaseIntegration {
       // Deploy platform token contract if not exists
       if (!this.platformTokenAddress) {
         const wallet = await this.getOrCreateWallet(1); // Admin wallet
-        
+
         const deployedContract = await wallet.deployToken({
           name: "OmniAuthor Token",
           symbol: "OMNI",
           totalSupply: "1000000000" // 1 billion tokens
         });
-        
+
         await deployedContract.wait();
         this.platformTokenAddress = deployedContract.getContractAddress();
-        
+
         console.log(`Platform token deployed at: ${this.platformTokenAddress}`);
       }
     } catch (error) {
@@ -82,16 +84,16 @@ export class CoinbaseIntegration {
     try {
       // Try to load existing wallet
       const user = await db.select().from(users).where(eq(users.id, userId)).get();
-      
+
       let wallet: Wallet;
-      
+
       if (user?.metadata?.walletData) {
         // Import existing wallet
         wallet = await Wallet.import(user.metadata.walletData as WalletData);
       } else {
         // Create new wallet
         wallet = await Wallet.create();
-        
+
         // Save wallet data to user
         await db.update(users)
           .set({
@@ -103,7 +105,7 @@ export class CoinbaseIntegration {
           })
           .where(eq(users.id, userId));
       }
-      
+
       this.walletCache.set(userId, wallet);
       return wallet;
     } catch (error) {
@@ -120,25 +122,25 @@ export class CoinbaseIntegration {
   ): Promise<string> {
     try {
       const wallet = await this.getOrCreateWallet(userId);
-      
+
       // Deploy NFT contract for the book
       const nftContract = await wallet.deployNFT({
         name: `${metadata.name} - OmniAuthor Edition`,
         symbol: "OMNI-BOOK",
         baseURI: "https://api.omniauthor.pro/nft/"
       });
-      
+
       await nftContract.wait();
       const contractAddress = nftContract.getContractAddress();
-      
+
       // Mint the NFT
       const mintTx = await nftContract.mint({
         to: wallet.getDefaultAddress()!.toString(),
         quantity: 1
       });
-      
+
       await mintTx.wait();
-      
+
       // Store NFT info in database
       await db.insert(blockchainAssets).values({
         projectId,
@@ -153,7 +155,7 @@ export class CoinbaseIntegration {
           mintedAt: new Date().toISOString()
         }
       });
-      
+
       return contractAddress;
     } catch (error) {
       console.error("Error creating book NFT:", error);
@@ -175,16 +177,16 @@ export class CoinbaseIntegration {
   ): Promise<string> {
     try {
       const wallet = await this.getOrCreateWallet(userId);
-      
+
       const nftContract = await wallet.deployNFT({
         name: `${collectionName} - OmniAuthor Merch`,
         symbol: "OMNI-MERCH",
         baseURI: "https://api.omniauthor.pro/merch/"
       });
-      
+
       await nftContract.wait();
       const contractAddress = nftContract.getContractAddress();
-      
+
       // Mint merchandise NFTs
       for (const item of items) {
         const mintTx = await nftContract.mint({
@@ -193,7 +195,7 @@ export class CoinbaseIntegration {
         });
         await mintTx.wait();
       }
-      
+
       return contractAddress;
     } catch (error) {
       console.error("Error creating merchandise collection:", error);
@@ -211,20 +213,20 @@ export class CoinbaseIntegration {
       const wallet = await this.getOrCreateWallet(userId);
       const tokenPrices = { pro: "100", enterprise: "250" }; // OMNI tokens
       const totalAmount = (parseInt(tokenPrices[plan]) * duration).toString();
-      
+
       // Transfer platform tokens for subscription
       const transfer = await wallet.createTransfer({
         amount: totalAmount,
         assetId: this.platformTokenAddress,
         destination: "0x742d35Cc6640C1e7e3B8a37B87d3F9C68b9f13D1" // Platform treasury
       });
-      
+
       await transfer.wait();
-      
+
       // Update user subscription
       const expirationDate = new Date();
       expirationDate.setMonth(expirationDate.getMonth() + duration);
-      
+
       await db.update(users)
         .set({
           plan,
@@ -234,7 +236,7 @@ export class CoinbaseIntegration {
           }
         })
         .where(eq(users.id, userId));
-      
+
       return transfer.getTransactionHash();
     } catch (error) {
       console.error("Error processing subscription payment:", error);
@@ -255,7 +257,7 @@ export class CoinbaseIntegration {
   ): Promise<string> {
     try {
       const wallet = await this.getOrCreateWallet(userId);
-      
+
       // Create commerce charge for book sales
       const charges = await Promise.all(books.map(async (book) => {
         const charge = await wallet.createPayment({
@@ -268,18 +270,18 @@ export class CoinbaseIntegration {
             formats: book.formats.join(',')
           }
         });
-        
+
         return {
           projectId: book.projectId,
           chargeId: charge.id,
           paymentUrl: charge.hosted_url
         };
       }));
-      
+
       // Generate storefront URL
       const storefrontId = crypto.randomUUID();
       const storefrontUrl = `https://store.omniauthor.pro/${userId}/${storefrontId}`;
-      
+
       // Store storefront data
       await db.update(users)
         .set({
@@ -293,7 +295,7 @@ export class CoinbaseIntegration {
           }
         })
         .where(eq(users.id, userId));
-      
+
       return storefrontUrl;
     } catch (error) {
       console.error("Error creating book storefront:", error);
@@ -312,23 +314,23 @@ export class CoinbaseIntegration {
   ): Promise<string[]> {
     try {
       const transactions: string[] = [];
-      
+
       for (const collaborator of collaborators) {
         const wallet = await this.getOrCreateWallet(1); // Platform wallet
         const collaboratorWallet = await this.getOrCreateWallet(collaborator.userId);
-        
+
         const amount = (parseFloat(totalRevenue) * collaborator.percentage / 100).toString();
-        
+
         const transfer = await wallet.createTransfer({
           amount,
           assetId: this.platformTokenAddress,
           destination: collaboratorWallet.getDefaultAddress()!.toString()
         });
-        
+
         await transfer.wait();
         transactions.push(transfer.getTransactionHash());
       }
-      
+
       return transactions;
     } catch (error) {
       console.error("Error distributing royalties:", error);
@@ -340,7 +342,7 @@ export class CoinbaseIntegration {
   async createTradingAgent(userId: number): Promise<void> {
     try {
       const wallet = await this.getOrCreateWallet(userId);
-      
+
       // Agent configuration for automated trading
       const agentConfig = {
         name: "OmniAuthor Trading Agent",
@@ -358,7 +360,7 @@ export class CoinbaseIntegration {
           "create_liquidity_pools"
         ]
       };
-      
+
       // Store agent configuration
       await db.update(users)
         .set({
@@ -368,7 +370,7 @@ export class CoinbaseIntegration {
           }
         })
         .where(eq(users.id, userId));
-      
+
     } catch (error) {
       console.error("Error creating trading agent:", error);
       throw error;
@@ -380,7 +382,7 @@ export class CoinbaseIntegration {
     try {
       const wallet = await this.getOrCreateWallet(userId);
       const balance = await wallet.getBalance();
-      
+
       return {
         address: wallet.getDefaultAddress()?.toString(),
         balance: balance.toString(),
@@ -409,7 +411,7 @@ export class CoinbaseIntegration {
       const assets = await db.select()
         .from(blockchainAssets)
         .where(eq(blockchainAssets.projectId, userId));
-      
+
       return assets.filter(asset => 
         asset.metadata?.type === 'book_nft' || 
         asset.metadata?.type === 'merchandise_nft'

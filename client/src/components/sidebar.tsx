@@ -51,6 +51,25 @@ export function Sidebar() {
             </Link>
           );
         })}
+        <Link href="/web3-marketplace" className={cn(
+              "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors font-medium",
+              location === "/web3-marketplace"
+                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                : "text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800"
+            )}>
+              <i className="fas fa-store"></i>
+              <span>Web3 Marketplace</span>
+            </Link>
+
+        <Link href="/admin" className={cn(
+              "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors font-medium border-2 border-red-500/20",
+              location === "/admin"
+                ? "bg-red-50 text-red-700 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+                : "text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+            )}>
+              <i className="fas fa-crown"></i>
+              <span>Admin Panel</span>
+            </Link>
       </nav>
 
       {/* User Profile */}
