@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(212, 90%, 62%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(262, 83%, 70%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(152, 69%, 44%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --accent-amber: hsl(45, 93%, 47%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  --neutral: hsl(240, 4.8%, 97.5%);
+  --neutral-dark: hsl(222, 47%, 11%);
+  --neutral-gray: hsl(215, 16%, 47%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(212, 90%, 62%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(262, 83%, 70%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(152, 69%, 44%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --accent-amber: hsl(45, 93%, 47%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+  --neutral: hsl(240, 3.7%, 15.9%);
+  --neutral-dark: hsl(0, 0%, 98%);
+  --neutral-gray: hsl(240, 5%, 64.9%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-brand {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  }
+  
+  .bg-gradient-accent {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-amber) 100%);
+  }
+  
+  .text-primary-custom {
+    color: var(--primary);
+  }
+  
+  .text-secondary-custom {
+    color: var(--secondary);
+  }
+  
+  .text-accent-custom {
+    color: var(--accent);
+  }
+  
+  .text-accent-amber-custom {
+    color: var(--accent-amber);
+  }
+  
+  .border-primary-custom {
+    border-color: var(--primary);
+  }
+  
+  .bg-primary-custom {
+    background-color: var(--primary);
+  }
+  
+  .bg-secondary-custom {
+    background-color: var(--secondary);
+  }
+  
+  .bg-accent-custom {
+    background-color: var(--accent);
+  }
+  
+  .bg-accent-amber-custom {
+    background-color: var(--accent-amber);
+  }
+}
