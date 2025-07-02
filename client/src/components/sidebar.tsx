@@ -10,6 +10,7 @@ const navigation = [
   { name: "Royalty Calculator", href: "/royalty-calculator", icon: "fas fa-dollar-sign" },
   { name: "Collaboration", href: "/collaboration", icon: "fas fa-users" },
   { name: "Blockchain", href: "/blockchain", icon: "fas fa-cubes" },
+  { name: "Web3 Marketplace", href: "/web3-marketplace", icon: "fas fa-store" },
 ];
 
 export function Sidebar() {

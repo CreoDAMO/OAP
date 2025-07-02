@@ -11,6 +11,8 @@ import RoyaltyCalculator from "@/pages/royalty-calculator";
 import Collaboration from "@/pages/collaboration";
 import Blockchain from "@/pages/blockchain";
 import NotFound from "@/pages/not-found";
+import AdvancedAnalytics from "./pages/advanced-analytics";
+import Web3Marketplace from "./pages/web3-marketplace";
 
 function Router() {
   return (
@@ -24,7 +26,9 @@ function Router() {
       <Route path="/royalty-calculator/:id" component={RoyaltyCalculator} />
       <Route path="/collaboration" component={Collaboration} />
       <Route path="/blockchain" component={Blockchain} />
-      <Route component={NotFound} />
+      <Route path="/advanced-analytics" component={AdvancedAnalytics} />
+      <Route path="/web3-marketplace" component={Web3Marketplace} />
+      <Route path="*" component={NotFound} />
     </Switch>
   );
 }

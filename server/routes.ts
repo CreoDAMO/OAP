@@ -287,6 +287,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Web3 Marketplace Routes
+  app.get("/api/web3/wallet", async (req, res) => {
+    try {
+      const { coinbaseIntegration } = await import('./coinbase-integration');
+      const portfolio = await coinbaseIntegration.getWalletPortfolio(MOCK_USER_ID);
+      res.json(portfolio);
+    } catch (error) {
+      console.error("Error getting wallet:", error);
+      res.status(500).json({ message: "Failed to get wallet data" });
+    }
+  });
+
+  app.get("/api/web3/tokens", async (req, res) => {
+    try {
+      const { coinbaseIntegration } = await import('./coinbase-integration');
+      const balance = await coinbaseIntegration.getPlatformTokenBalance(MOCK_USER_ID);
+      res.json({ balance, symbol: "OMNI" });
+    } catch (error) {
+      res.json({ balance: "0", symbol: "OMNI" });
+    }
+  });
+
+  app.post("/api/web3/create-nft", async (req, res) => {
+    try {
+      const { projectId, metadata } = req.body;
+      const { coinbaseIntegration } = await import('./coinbase-integration');
+      
+      const contractAddress = await coinbaseIntegration.createBookNFT(
+        MOCK_USER_ID,
+        projectId,
+        {
+          name: metadata.name,
+          description: metadata.description,
+          image: `https://api.omniauthor.pro/projects/${projectId}/cover`,
+          attributes: [
+            { trait_type: "Author", value: "OmniAuthor User" },
+            { trait_type: "Edition", value: "First Edition" },
+            { trait_type: "Format", value: "Digital Book NFT" }
+          ]
+        }
+      );
+      
+      res.json({ contractAddress, message: "NFT created successfully" });
+    } catch (error) {
+      console.error("Error creating NFT:", error);
+      res.status(500).json({ message: "Failed to create NFT" });
+    }
+  });
+
+  app.post("/api/web3/create-storefront", async (req, res) => {
+    try {
+      const { books } = req.body;
+      const { coinbaseIntegration } = await import('./coinbase-integration');
+      
+      const storefrontUrl = await coinbaseIntegration.createBookStorefront(
+        MOCK_USER_ID,
+        books.map((book: any) => ({
+          projectId: book.id,
+          title: book.title,
+          price: "0.01",
+          currency: "ETH",
+          formats: ["PDF", "EPUB", "MOBI"]
+        }))
+      );
+      
+      res.json({ url: storefrontUrl, message: "Storefront created successfully" });
+    } catch (error) {
+      console.error("Error creating storefront:", error);
+      res.status(500).json({ message: "Failed to create storefront" });
+    }
+  });
+
+  app.post("/api/web3/subscribe", async (req, res) => {
+    try {
+      const { plan, duration } = req.body;
+      const { coinbaseIntegration } = await import('./coinbase-integration');
+      
+      const txHash = await coinbaseIntegration.processSubscriptionPayment(
+        MOCK_USER_ID,
+        plan,
+        duration
+      );
+      
+      res.json({ transactionHash: txHash, message: "Subscription processed" });
+    } catch (error) {
+      console.error("Error processing subscription:", error);
+      res.status(500).json({ message: "Failed to process subscription" });
+    }
+  });
+
   // Dashboard stats route
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
