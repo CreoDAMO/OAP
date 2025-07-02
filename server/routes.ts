@@ -412,6 +412,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Authentication Routes
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const { adminSystem } = await import('./admin');
+      
+      const result = await adminSystem.authenticateAdmin(email, password);
+      
+      if (result) {
+        res.json(result);
+      } else {
+        res.status(401).json({ message: "Invalid credentials" });
+      }
+    } catch (error) {
+      console.error("Admin login error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Admin Panel Routes (Protected)
+  app.get("/api/admin/overview", async (req, res) => {
+    try {
+      const { adminSystem } = await import('./admin');
+      // Apply admin verification middleware
+      adminSystem.verifyAdmin(req, res, async () => {
+        const overview = await adminSystem.getPlatformOverview();
+        res.json(overview);
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch overview" });
+    }
+  });
+
+  app.get("/api/admin/finances", async (req, res) => {
+    try {
+      const { adminSystem } = await import('./admin');
+      adminSystem.verifyAdmin(req, res, async () => {
+        const finances = await adminSystem.getFinancialBreakdown();
+        res.json(finances);
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch financial data" });
+    }
+  });
+
+  app.post("/api/admin/distribute", async (req, res) => {
+    try {
+      const { adminSystem } = await import('./admin');
+      adminSystem.verifyAdmin(req, res, async () => {
+        const { amount, type } = req.body;
+        const result = await adminSystem.manualDistribution(amount, type);
+        res.json(result);
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Distribution failed" });
+    }
+  });
+
+  app.get("/api/admin/logs", async (req, res) => {
+    try {
+      const { adminSystem } = await import('./admin');
+      adminSystem.verifyAdmin(req, res, async () => {
+        const logs = await adminSystem.getSystemLogs();
+        res.json(logs);
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch logs" });
+    }
+  });
+
+  // Tokenomics Routes
+  app.post("/api/tokenomics/process-revenue", async (req, res) => {
+    try {
+      const { tokenomicsEngine } = await import('./tokenomics');
+      const { type, amount, currency, userId, projectId, metadata } = req.body;
+      
+      const result = await tokenomicsEngine.distributeRevenue({
+        type,
+        amount,
+        currency,
+        userId,
+        projectId,
+        metadata
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Revenue processing failed:", error);
+      res.status(500).json({ message: "Failed to process revenue" });
+    }
+  });
+
+  app.post("/api/tokenomics/subscription", async (req, res) => {
+    try {
+      const { tokenomicsEngine } = await import('./tokenomics');
+      const { plan } = req.body;
+      
+      const subscription = await tokenomicsEngine.createStripeSubscription(MOCK_USER_ID, plan);
+      res.json(subscription);
+    } catch (error) {
+      console.error("Subscription creation failed:", error);
+      res.status(500).json({ message: "Failed to create subscription" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
