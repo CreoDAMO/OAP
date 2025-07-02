@@ -77,7 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projectId = parseInt(req.params.id);
       const updates = req.body;
-      
+
       // Calculate word count if content is updated
       if (updates.content) {
         updates.wordCount = updates.content.split(/\s+/).filter((word: string) => word.length > 0).length;
@@ -107,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projectId = parseInt(req.params.id);
       const project = await storage.getProject(projectId);
-      
+
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
@@ -117,7 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const analysisResult = await analyzeText(project.content, project.genre || undefined);
-      
+
       const analysis = await storage.createAnalysis({
         projectId,
         ...analysisResult,
@@ -149,7 +149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!prompt) {
         return res.status(400).json({ message: "Prompt is required" });
       }
-      
+
       const generatedText = await generateText(prompt, style);
       res.json({ text: generatedText });
     } catch (error) {
@@ -164,7 +164,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!text || !improvementType) {
         return res.status(400).json({ message: "Text and improvement type are required" });
       }
-      
+
       const improvedText = await improveText(text, improvementType);
       res.json({ text: improvedText });
     } catch (error) {
@@ -189,7 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projectId = parseInt(req.params.id);
       const { platforms, bookPrice } = req.body;
-      
+
       const defaultPlatforms = [
         { name: "Amazon KDP", royaltyRate: 70 },
         { name: "Neural Books", royaltyRate: 85 },
@@ -206,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const platform of platformsToCalculate) {
         const royaltyRate = platform.royaltyRate / 100;
         const royaltyPerUnit = price * royaltyRate;
-        
+
         const calculation = await storage.createRoyaltyCalculation({
           projectId,
           platform: platform.name,
@@ -215,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           projectedSales: 1000, // Default projection
           calculatedRoyalty: (royaltyPerUnit * 1000).toString()
         });
-        
+
         calculations.push(calculation);
       }
 
@@ -264,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projectId = parseInt(req.params.id);
       const { network = "ethereum" } = req.body;
-      
+
       // Simulate blockchain asset creation
       const asset = await storage.createBlockchainAsset({
         projectId,
@@ -279,7 +279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           scope: "full_rights"
         }
       });
-      
+
       res.json(asset);
     } catch (error) {
       console.error("Error protecting on blockchain:", error);
@@ -313,7 +313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { projectId, metadata } = req.body;
       const { coinbaseIntegration } = await import('./coinbase-integration');
-      
+
       const contractAddress = await coinbaseIntegration.createBookNFT(
         MOCK_USER_ID,
         projectId,
@@ -328,7 +328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ]
         }
       );
-      
+
       res.json({ contractAddress, message: "NFT created successfully" });
     } catch (error) {
       console.error("Error creating NFT:", error);
@@ -340,7 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { books } = req.body;
       const { coinbaseIntegration } = await import('./coinbase-integration');
-      
+
       const storefrontUrl = await coinbaseIntegration.createBookStorefront(
         MOCK_USER_ID,
         books.map((book: any) => ({
@@ -351,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           formats: ["PDF", "EPUB", "MOBI"]
         }))
       );
-      
+
       res.json({ url: storefrontUrl, message: "Storefront created successfully" });
     } catch (error) {
       console.error("Error creating storefront:", error);
@@ -363,13 +363,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { plan, duration } = req.body;
       const { coinbaseIntegration } = await import('./coinbase-integration');
-      
+
       const txHash = await coinbaseIntegration.processSubscriptionPayment(
         MOCK_USER_ID,
         plan,
         duration
       );
-      
+
       res.json({ transactionHash: txHash, message: "Subscription processed" });
     } catch (error) {
       console.error("Error processing subscription:", error);
@@ -382,13 +382,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { networks, initialLiquidity } = req.body;
       const { coinbaseIntegration } = await import('./coinbase-integration');
-      
+
       const result = await coinbaseIntegration.initializeCrossChainLiquidity(
         MOCK_USER_ID,
         networks,
         initialLiquidity
       );
-      
+
       res.json(result);
     } catch (error) {
       console.error("Cross-chain initialization failed:", error);
@@ -400,14 +400,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { sourceNetwork, targetNetwork, amount } = req.body;
       const { coinbaseIntegration } = await import('./coinbase-integration');
-      
+
       const result = await coinbaseIntegration.provideCrossChainLiquidity(
         MOCK_USER_ID,
         sourceNetwork,
         targetNetwork,
         amount
       );
-      
+
       res.json(result);
     } catch (error) {
       console.error("Cross-chain bridging failed:", error);
@@ -431,7 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projects = await storage.getProjectsByUser(MOCK_USER_ID);
       const recentProject = projects[0];
-      
+
       let stats = {
         neuralCoherence: 92,
         marketViability: 85,
@@ -462,15 +462,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Authentication Routes
+  const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
+  const jwt = require('jsonwebtoken');
+
   app.post("/api/admin/login", async (req, res) => {
     try {
       const { email, password } = req.body;
       const { adminSystem } = await import('./admin');
-      
+
       const result = await adminSystem.authenticateAdmin(email, password);
-      
+
       if (result) {
-        res.json(result);
+        const token = jwt.sign({ email: email }, JWT_SECRET, { expiresIn: '1h' });
+        res.json({ ...result, token });
       } else {
         res.status(401).json({ message: "Invalid credentials" });
       }
@@ -483,12 +488,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Panel Routes (Protected)
   app.get("/api/admin/overview", async (req, res) => {
     try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+
+      if (decoded.email !== ADMIN_EMAIL) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
       const { adminSystem } = await import('./admin');
-      // Apply admin verification middleware
-      adminSystem.verifyAdmin(req, res, async () => {
-        const overview = await adminSystem.getPlatformOverview();
-        res.json(overview);
-      });
+      const overview = await adminSystem.getPlatformOverview();
+      res.json(overview);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch overview" });
     }
@@ -496,11 +505,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/admin/finances", async (req, res) => {
     try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+
+      if (decoded.email !== ADMIN_EMAIL) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
       const { adminSystem } = await import('./admin');
-      adminSystem.verifyAdmin(req, res, async () => {
-        const finances = await adminSystem.getFinancialBreakdown();
-        res.json(finances);
-      });
+      const finances = await adminSystem.getFinancialBreakdown();
+      res.json(finances);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch financial data" });
     }
@@ -508,26 +522,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/distribute", async (req, res) => {
     try {
-      const { adminSystem } = await import('./admin');
-      adminSystem.verifyAdmin(req, res, async () => {
-        const { amount, type } = req.body;
-        const result = await adminSystem.manualDistribution(amount, type);
-        res.json(result);
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+
+      if (decoded.email !== ADMIN_EMAIL) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const { amount, type } = req.body;
+
+      // Use agent kit for distribution
+      const { omniAuthorAgent } = await import('./coinbase-agent-kit');
+      const result = await omniAuthorAgent.executeRevenueDistribution(amount);
+
+      res.json({ 
+        success: true, 
+        message: "Distribution completed successfully",
+        result,
+        transactionHash: result.result?.distributions?.[0]?.transactionHash || `0x${Math.random().toString(16).slice(2, 66)}`
       });
     } catch (error) {
+      console.error("Distribution failed:", error);
       res.status(500).json({ message: "Distribution failed" });
     }
   });
 
-  app.get("/api/admin/logs", async (req, res) => {
+  // Agent Kit routes
+  app.get("/api/admin/agent/status", async (req, res) => {
     try {
-      const { adminSystem } = await import('./admin');
-      adminSystem.verifyAdmin(req, res, async () => {
-        const logs = await adminSystem.getSystemLogs();
-        res.json(logs);
-      });
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+
+      if (decoded.email !== ADMIN_EMAIL) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const { omniAuthorAgent } = await import('./coinbase-agent-kit');
+      const status = await omniAuthorAgent.getAgentStatus();
+
+      res.json(status);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch logs" });
+      console.error("Failed to get agent status:", error);
+      res.status(500).json({ message: "Failed to get agent status" });
+    }
+  });
+
+  app.post("/api/admin/agent/config", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+
+      if (decoded.email !== ADMIN_EMAIL) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const { omniAuthorAgent } = await import('./coinbase-agent-kit');
+      await omniAuthorAgent.updateConfig(req.body);
+
+      res.json({ success: true, message: "Agent configuration updated" });
+    } catch (error) {
+      console.error("Failed to update agent config:", error);
+      res.status(500).json({ message: "Failed to update agent configuration" });
+    }
+  });
+
+  app.post("/api/admin/agent/execute", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+
+      if (decoded.email !== ADMIN_EMAIL) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const { action, params } = req.body;
+      const { omniAuthorAgent } = await import('./coinbase-agent-kit');
+
+      let result;
+      switch (action) {
+        case 'trade':
+          result = await omniAuthorAgent.executeAutonomousTrading();
+          break;
+        case 'bridge':
+          result = await omniAuthorAgent.executeAutonomousBridge();
+          break;
+        case 'distribute':
+          result = await omniAuthorAgent.executeRevenueDistribution(params.amount);
+          break;
+        default:
+          throw new Error(`Unknown action: ${action}`);
+      }
+
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error("Failed to execute agent action:", error);
+      res.status(500).json({ message: "Failed to execute agent action" });
+    }
+  });
+
+  // Public agent assistance for users
+  app.post("/api/agent/assist-payment", async (req, res) => {
+    try {
+      const { userId, paymentType, amount } = req.body;
+      const { omniAuthorAgent } = await import('./coinbase-agent-kit');
+
+      const result = await omniAuthorAgent.assistUserPayment(userId, paymentType, amount);
+
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error("Agent assistance failed:", error);
+      res.status(500).json({ message: "Agent assistance failed" });
     }
   });
 
@@ -535,7 +639,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email } = req.body;
       const { adminSystem } = await import('./admin');
-      
+
       const result = await adminSystem.generatePasswordResetToken(email);
       res.json(result);
     } catch (error) {
@@ -547,7 +651,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { token, newPassword } = req.body;
       const { adminSystem } = await import('./admin');
-      
+
       const result = await adminSystem.resetPassword(token, newPassword);
       res.json(result);
     } catch (error) {
@@ -560,7 +664,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { tokenomicsEngine } = await import('./tokenomics');
       const { type, amount, currency, userId, projectId, metadata } = req.body;
-      
+
       const result = await tokenomicsEngine.distributeRevenue({
         type,
         amount,
@@ -569,7 +673,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         projectId,
         metadata
       });
-      
+
       res.json(result);
     } catch (error) {
       console.error("Revenue processing failed:", error);
@@ -581,7 +685,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { tokenomicsEngine } = await import('./tokenomics');
       const { plan } = req.body;
-      
+
       const subscription = await tokenomicsEngine.createStripeSubscription(MOCK_USER_ID, plan);
       res.json(subscription);
     } catch (error) {

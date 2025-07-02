@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import AgentKitPanel from "@/components/agent-kit-panel";
 
 interface AdminAuth {
   token: string;
@@ -397,6 +398,9 @@ export default function AdminPanel() {
             <TabsTrigger value="logs" className="data-[state=active]:bg-red-600">
               <i className="fas fa-list mr-2"></i>System Logs
             </TabsTrigger>
+            <TabsTrigger value="agent" className="data-[state=active]:bg-cyan-600">
+              <i className="fas fa-robot mr-2"></i>Agent Kit
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -726,6 +730,10 @@ export default function AdminPanel() {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="agent" className="space-y-6">
+            <AgentKitPanel />
           </TabsContent>
 
           <TabsContent value="logs" className="space-y-6">

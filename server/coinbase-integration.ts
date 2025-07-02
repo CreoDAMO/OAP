@@ -61,19 +61,54 @@ export class CoinbaseIntegration {
       if (!this.platformTokenAddress) {
         const wallet = await this.getOrCreateWallet(1); // Admin wallet
 
-        const deployedContract = await wallet.deployToken({
-          name: "OmniAuthor Token",
-          symbol: "OMNI",
-          totalSupply: "1000000000" // 1 billion tokens
+        // Deploy the comprehensive platform contract
+        const deployedContract = await wallet.deployContract({
+          contractName: "OmniAuthorToken",
+          contractSource: await this.getPlatformContractSource(),
+          constructorArgs: []
         });
 
         await deployedContract.wait();
         this.platformTokenAddress = deployedContract.getContractAddress();
 
-        console.log(`Platform token deployed at: ${this.platformTokenAddress}`);
+        console.log(`OmniAuthor Platform Token deployed at: ${this.platformTokenAddress}`);
+        console.log(`Founder wallet: 0xCc380FD8bfbdF0c020de64075b86C84c2BB0AE79`);
       }
     } catch (error) {
       console.error("Error initializing platform token:", error);
+      // Fallback to simple token deployment
+      await this.deployFallbackToken();
+    }
+  }
+
+  private async getPlatformContractSource(): Promise<string> {
+    const fs = require('fs');
+    const path = require('path');
+    
+    try {
+      return fs.readFileSync(path.join(__dirname, 'platform-contract.sol'), 'utf8');
+    } catch (error) {
+      console.error("Error reading contract source:", error);
+      throw error;
+    }
+  }
+
+  private async deployFallbackToken(): Promise<void> {
+    try {
+      const wallet = await this.getOrCreateWallet(1);
+      
+      const deployedContract = await wallet.deployToken({
+        name: "OmniAuthor Token",
+        symbol: "OMNI",
+        totalSupply: "1000000000" // 1 billion tokens
+      });
+
+      await deployedContract.wait();
+      this.platformTokenAddress = deployedContract.getContractAddress();
+      
+      console.log(`Fallback token deployed at: ${this.platformTokenAddress}`);
+    } catch (error) {
+      console.error("Error deploying fallback token:", error);
     }
   }
 
