@@ -1,11 +1,13 @@
-Fixing the module import path for users schema.
+The code integrates Polygon AggLayer for cross-chain liquidity and adds functions to manage cross-chain token distribution.
 ```
+
 ```replit_final_file
 import { Coinbase, Wallet, WalletData } from "@coinbase/coinbase-sdk";
 import crypto from 'crypto';
 import { db } from './db';
 import { users, projects, blockchainAssets } from '../shared/schema.js';
 import { eq } from 'drizzle-orm';
+import { polygonAggLayer } from './polygon-agglayer';
 
 // Initialize Coinbase SDK
 const coinbase = Coinbase.configureFromJson({
@@ -418,6 +420,97 @@ export class CoinbaseIntegration {
       );
     } catch (error) {
       return [];
+    }
+  }
+
+  // Initialize cross-chain liquidity pools
+  async initializeCrossChainLiquidity(
+    userId: number,
+    networks: string[] = ['ethereum', 'polygon', 'base'],
+    initialLiquidity: string = "10000"
+  ): Promise<{ pools: any[]; coordinator: string }> {
+    try {
+      const result = await polygonAggLayer.initializeCrossChainPools(userId, {
+        networks,
+        tokens: ['OMNI', 'ETH'],
+        minLiquidity: initialLiquidity,
+        slippage: 0.5
+      });
+
+      console.log("Cross-chain liquidity initialized:", result);
+      return result;
+    } catch (error) {
+      console.error("Cross-chain initialization failed:", error);
+      throw error;
+    }
+  }
+
+  // Provide liquidity across chains
+  async provideCrossChainLiquidity(
+    userId: number,
+    sourceNetwork: string,
+    targetNetwork: string,
+    amount: string
+  ): Promise<{ txHash: string; bridgeId: string; estimatedTime: number }> {
+    try {
+      return await polygonAggLayer.provideCrossChainLiquidity(
+        userId,
+        sourceNetwork,
+        targetNetwork,
+        amount,
+        ['OMNI', 'ETH']
+      );
+    } catch (error) {
+      console.error("Cross-chain liquidity provision failed:", error);
+      throw error;
+    }
+  }
+
+  // Get cross-chain liquidity health
+  async getCrossChainLiquidityHealth() {
+    try {
+      return await polygonAggLayer.getLiquidityHealth();
+    } catch (error) {
+      console.error("Failed to get liquidity health:", error);
+      return {
+        totalLiquidity: "0 OMNI",
+        networkDistribution: {},
+        bridgeVolume24h: "0 OMNI",
+        avgBridgeTime: 0,
+        successRate: 0
+      };
+    }
+  }
+
+  // Enhanced token distribution with cross-chain support
+  async distributePlatformTokens(
+    recipients: Array<{
+      userId: number;
+      amount: string;
+      network?: string;
+    }>
+  ): Promise<string[]> {
+    try {
+      const transactions: string[] = [];
+
+      for (const recipient of recipients) {
+        const wallet = await this.getOrCreateWallet(1); // Platform wallet
+        const recipientWallet = await this.getOrCreateWallet(recipient.userId);
+
+        const transfer = await wallet.createTransfer({
+          amount: recipient.amount,
+          assetId: this.platformTokenAddress,
+          destination: recipientWallet.getDefaultAddress()!.toString()
+        });
+
+        await transfer.wait();
+        transactions.push(transfer.getTransactionHash());
+      }
+
+      return transactions;
+    } catch (error) {
+      console.error("Error distributing platform tokens:", error);
+      throw error;
     }
   }
 }

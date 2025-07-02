@@ -377,6 +377,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Polygon AggLayer Routes
+  app.post("/api/web3/init-cross-chain", async (req, res) => {
+    try {
+      const { networks, initialLiquidity } = req.body;
+      const { coinbaseIntegration } = await import('./coinbase-integration');
+      
+      const result = await coinbaseIntegration.initializeCrossChainLiquidity(
+        MOCK_USER_ID,
+        networks,
+        initialLiquidity
+      );
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Cross-chain initialization failed:", error);
+      res.status(500).json({ message: "Failed to initialize cross-chain liquidity" });
+    }
+  });
+
+  app.post("/api/web3/bridge-liquidity", async (req, res) => {
+    try {
+      const { sourceNetwork, targetNetwork, amount } = req.body;
+      const { coinbaseIntegration } = await import('./coinbase-integration');
+      
+      const result = await coinbaseIntegration.provideCrossChainLiquidity(
+        MOCK_USER_ID,
+        sourceNetwork,
+        targetNetwork,
+        amount
+      );
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Cross-chain bridging failed:", error);
+      res.status(500).json({ message: "Failed to bridge liquidity" });
+    }
+  });
+
+  app.get("/api/web3/liquidity-health", async (req, res) => {
+    try {
+      const { coinbaseIntegration } = await import('./coinbase-integration');
+      const health = await coinbaseIntegration.getCrossChainLiquidityHealth();
+      res.json(health);
+    } catch (error) {
+      console.error("Failed to get liquidity health:", error);
+      res.status(500).json({ message: "Failed to get liquidity health" });
+    }
+  });
+
   // Dashboard stats route
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
@@ -479,6 +528,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch logs" });
+    }
+  });
+
+  app.post("/api/admin/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      const { adminSystem } = await import('./admin');
+      
+      const result = await adminSystem.generatePasswordResetToken(email);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "Password reset failed" });
+    }
+  });
+
+  app.post("/api/admin/reset-password", async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      const { adminSystem } = await import('./admin');
+      
+      const result = await adminSystem.resetPassword(token, newPassword);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "Password reset failed" });
     }
   });
 

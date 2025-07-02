@@ -27,6 +27,11 @@ export default function AdminPanel() {
   const [auth, setAuth] = useState<AdminAuth | null>(null);
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [resetToken, setResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showResetForm, setShowResetForm] = useState(false);
   const [distributionAmount, setDistributionAmount] = useState("1.0");
   const [distributionType, setDistributionType] = useState("platform_fee");
 
@@ -101,6 +106,60 @@ export default function AdminPanel() {
     queryKey: ['/api/admin/logs'],
     queryFn: () => fetchWithAuth('/api/admin/logs'),
     enabled: !!auth?.token
+  });
+
+  // Forgot password mutation
+  const forgotPasswordMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const response = await fetch('/api/admin/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({
+          title: "🔐 Reset Link Sent",
+          description: data.message,
+        });
+        setShowForgotPassword(false);
+      } else {
+        toast({
+          title: "❌ Reset Failed",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
+    }
+  });
+
+  // Reset password mutation
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ token, newPassword }: { token: string; newPassword: string }) => {
+      const response = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, newPassword })
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({
+          title: "🔒 Password Updated",
+          description: data.message,
+        });
+        setShowResetForm(false);
+      } else {
+        toast({
+          title: "❌ Reset Failed",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
+    }
   });
 
   // Manual distribution mutation
@@ -188,7 +247,7 @@ export default function AdminPanel() {
                     type="text"
                     value={loginForm.email}
                     onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="jacque@omniauthor.pro"
+                    placeholder="jacquedegraff81@gmail.com"
                     className="bg-gray-800/50 border-gray-600 text-white placeholder:text-gray-500"
                     required
                   />
@@ -225,6 +284,64 @@ export default function AdminPanel() {
                   )}
                 </Button>
               </form>
+              
+              <div className="text-center">
+                <Button
+                  variant="link"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-gray-400 hover:text-white text-sm"
+                >
+                  <i className="fas fa-key mr-2"></i>
+                  Forgot Security Key?
+                </Button>
+              </div>
+
+              {/* Forgot Password Modal */}
+              {showForgotPassword && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+                  <Card className="bg-gray-900/95 backdrop-blur-xl border-gray-700 shadow-2xl w-full max-w-md mx-4">
+                    <CardHeader>
+                      <CardTitle className="text-white text-center">
+                        <i className="fas fa-key text-blue-400 mr-2"></i>
+                        Reset Security Key
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-gray-300">Admin Email</Label>
+                        <Input
+                          type="email"
+                          value={forgotPasswordEmail}
+                          onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                          placeholder="jacquedegraff81@gmail.com or omniauthor@outlook.com"
+                          className="bg-gray-800/50 border-gray-600 text-white"
+                        />
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          onClick={() => forgotPasswordMutation.mutate(forgotPasswordEmail)}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700"
+                          disabled={forgotPasswordMutation.isPending}
+                        >
+                          {forgotPasswordMutation.isPending ? (
+                            <i className="fas fa-spinner fa-spin mr-2"></i>
+                          ) : (
+                            <i className="fas fa-paper-plane mr-2"></i>
+                          )}
+                          Send Reset Link
+                        </Button>
+                        <Button
+                          onClick={() => setShowForgotPassword(false)}
+                          variant="outline"
+                          className="border-gray-600 text-gray-300"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

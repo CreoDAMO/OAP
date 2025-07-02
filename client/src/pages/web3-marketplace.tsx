@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sidebar } from "@/components/sidebar";
@@ -16,7 +15,7 @@ import { api } from "@/lib/api";
 export default function Web3Marketplace() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [selectedTab, setSelectedTab] = useState("storefront");
   const [nftPrice, setNftPrice] = useState("0.1");
   const [merchandiseItems, setMerchandiseItems] = useState([
@@ -157,7 +156,7 @@ export default function Web3Marketplace() {
                           </div>
                           <Badge variant="outline">{project.genre}</Badge>
                         </div>
-                        
+
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2">
                             <Input
@@ -176,7 +175,7 @@ export default function Web3Marketplace() {
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           <div className="flex flex-wrap gap-1">
                             {["PDF", "EPUB", "MOBI", "Audiobook"].map((format) => (
                               <Badge key={format} variant="secondary" className="text-xs">
@@ -188,7 +187,7 @@ export default function Web3Marketplace() {
                       </Card>
                     ))}
                   </div>
-                  
+
                   <Button 
                     onClick={() => createStorefrontMutation.mutate(projects || [])}
                     disabled={!projects?.length || createStorefrontMutation.isPending}
@@ -372,7 +371,7 @@ export default function Web3Marketplace() {
                         </div>
                       </Card>
                     ))}
-                    
+
                     <div className="flex space-x-2">
                       <Button onClick={addMerchandiseItem} variant="outline">
                         <i className="fas fa-plus mr-2"></i>
@@ -407,7 +406,7 @@ export default function Web3Marketplace() {
                         <li>• Governance voting rights</li>
                       </ul>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <Button variant="outline">
                         <i className="fas fa-exchange-alt mr-2"></i>
@@ -438,7 +437,7 @@ export default function Web3Marketplace() {
                         <li>• Market analysis</li>
                       </ul>
                     </div>
-                    
+
                     <Button className="w-full bg-cyan-600 hover:bg-cyan-700">
                       <i className="fas fa-robot mr-2"></i>
                       Activate Trading Agent
@@ -449,38 +448,172 @@ export default function Web3Marketplace() {
             </TabsContent>
 
             <TabsContent value="analytics" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Total Revenue</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">12.5 ETH</div>
-                    <div className="text-xs text-green-600">+15% this month</div>
-                  </CardContent>
-                </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Market Performance */}
+              <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <i className="fas fa-chart-line text-green-400 mr-3"></i>
+                    Market Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">OMNI Token Price</span>
+                      <span className="text-green-400 font-semibold">$0.045 (+12%)</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">24h Volume</span>
+                      <span className="text-blue-400 font-semibold">15,432 OMNI</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Market Cap</span>
+                      <span className="text-purple-400 font-semibold">$450K</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">NFTs Sold</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">47</div>
-                    <div className="text-xs text-blue-600">8 this week</div>
-                  </CardContent>
-                </Card>
+              {/* Cross-Chain Liquidity */}
+              <Card className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 border-purple-500/20 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <i className="fas fa-network-wired text-purple-400 mr-3"></i>
+                    AggLayer Liquidity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="text-center mb-4">
+                      <div className="text-2xl font-bold text-purple-400">5 Networks</div>
+                      <div className="text-sm text-gray-400">Cross-chain enabled</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-blue-500/10 p-2 rounded border border-blue-500/20">
+                        <div className="text-blue-400 font-medium">Ethereum</div>
+                        <div className="text-white">456K OMNI</div>
+                      </div>
+                      <div className="bg-purple-500/10 p-2 rounded border border-purple-500/20">
+                        <div className="text-purple-400 font-medium">Polygon</div>
+                        <div className="text-white">345K OMNI</div>
+                      </div>
+                      <div className="bg-orange-500/10 p-2 rounded border border-orange-500/20">
+                        <div className="text-orange-400 font-medium">Base</div>
+                        <div className="text-white">234K OMNI</div>
+                      </div>
+                      <div className="bg-green-500/10 p-2 rounded border border-green-500/20">
+                        <div className="text-green-400 font-medium">Arbitrum</div>
+                        <div className="text-white">123K OMNI</div>
+                      </div>
+                    </div>
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                      <i className="fas fa-bridge mr-2"></i>
+                      Bridge Liquidity
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Active Collectors</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">128</div>
-                    <div className="text-xs text-purple-600">Growing community</div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
+              {/* Trading Activity */}
+              <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <i className="fas fa-exchange-alt text-blue-400 mr-3"></i>
+                    Recent Trading
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { type: "BUY", amount: "1,250 OMNI", price: "$0.044", time: "2m ago" },
+                      { type: "SELL", amount: "800 OMNI", price: "$0.046", time: "5m ago" },
+                      { type: "BUY", amount: "2,100 OMNI", price: "$0.043", time: "8m ago" }
+                    ].map((trade, i) => (
+                      <div key={i} className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant={trade.type === 'BUY' ? 'default' : 'destructive'} className="text-xs">
+                            {trade.type}
+                          </Badge>
+                          <span className="text-gray-300 text-sm">{trade.amount}</span>
+                        </div>
+                        <div className="text-right text-sm">
+                          <div className="text-white">{trade.price}</div>
+                          <div className="text-gray-400 text-xs">{trade.time}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Cross-Chain Bridge Interface */}
+            <Card className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border-purple-500/30 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <i className="fas fa-globe text-purple-400 mr-3"></i>
+                  Polygon AggLayer Bridge
+                  <Badge className="ml-3 bg-purple-500/20 text-purple-300 border-purple-500/30">
+                    Multi-Chain
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="space-y-4">
+                    <Label className="text-gray-300">From Network</Label>
+                    <select className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded text-white">
+                      <option value="ethereum">Ethereum</option>
+                      <option value="polygon">Polygon</option>
+                      <option value="base">Base</option>
+                      <option value="arbitrum">Arbitrum</option>
+                      <option value="optimism">Optimism</option>
+                    </select>
+                  </div>
+                  <div className="space-y-4">
+                    <Label className="text-gray-300">To Network</Label>
+                    <select className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded text-white">
+                      <option value="polygon">Polygon</option>
+                      <option value="ethereum">Ethereum</option>
+                      <option value="base">Base</option>
+                      <option value="arbitrum">Arbitrum</option>
+                      <option value="optimism">Optimism</option>
+                    </select>
+                  </div>
+                  <div className="space-y-4">
+                    <Label className="text-gray-300">Amount</Label>
+                    <Input 
+                      placeholder="1000 OMNI"
+                      className="bg-gray-800/50 border-gray-600 text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-6 p-4 bg-gray-800/30 rounded-lg border border-gray-700">
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="text-center">
+                      <div className="text-gray-400">Bridge Fee</div>
+                      <div className="text-green-400 font-semibold">0.1%</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-gray-400">Est. Time</div>
+                      <div className="text-blue-400 font-semibold">~3 mins</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-gray-400">Success Rate</div>
+                      <div className="text-purple-400 font-semibold">99.7%</div>
+                    </div>
+                  </div>
+                </div>
+
+                <Button className="w-full mt-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3">
+                  <i className="fas fa-rocket mr-2"></i>
+                  Initialize Cross-Chain Bridge
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
           </Tabs>
         </div>
       </main>

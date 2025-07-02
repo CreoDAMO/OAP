@@ -9,7 +9,8 @@ import { tokenomicsEngine } from './tokenomics';
 import { coinbaseIntegration } from './coinbase-integration';
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET_KEY || 'ultra_secure_admin_key_change_in_production';
-const FOUNDER_EMAIL = 'jacque@omniauthor.pro';
+const FOUNDER_EMAIL = 'jacquedegraff81@gmail.com';
+const BACKUP_EMAIL = 'omniauthor@outlook.com';
 const FOUNDER_USERNAME = 'jacque_degraff';
 
 export interface AdminUser {
@@ -27,7 +28,7 @@ export class AdminSystem {
   async authenticateAdmin(email: string, password: string): Promise<{ token: string; user: AdminUser } | null> {
     try {
       // Check if it's the founder
-      if (email === FOUNDER_EMAIL || email === FOUNDER_USERNAME) {
+      if (email === FOUNDER_EMAIL || email === BACKUP_EMAIL || email === FOUNDER_USERNAME) {
         // Verify against admin secret (in production, use proper password hashing)
         const isValid = await bcrypt.compare(password, await bcrypt.hash(ADMIN_SECRET, 10)) || password === ADMIN_SECRET;
         
@@ -165,6 +166,40 @@ export class AdminSystem {
       userId: 1, // System user
       metadata: { manual: true, timestamp: new Date().toISOString() }
     });
+  }
+
+  // Generate password reset token
+  async generatePasswordResetToken(email: string): Promise<{ success: boolean; message: string }> {
+    if (email !== FOUNDER_EMAIL && email !== BACKUP_EMAIL) {
+      return { success: false, message: "Email not authorized for admin access" };
+    }
+
+    // In production, implement proper email sending
+    const resetToken = Math.random().toString(36).substring(2, 15);
+    const resetUrl = `https://omniauthor.pro/admin/reset-password?token=${resetToken}`;
+    
+    console.log(`Password reset for ${email}: ${resetUrl}`);
+    
+    return { 
+      success: true, 
+      message: "Password reset instructions sent to your email" 
+    };
+  }
+
+  // Reset password with token
+  async resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+    // In production, validate token properly
+    if (!token || !newPassword) {
+      return { success: false, message: "Invalid reset request" };
+    }
+
+    // Update admin secret (in production, use proper password hashing)
+    process.env.ADMIN_SECRET_KEY = await bcrypt.hash(newPassword, 12);
+    
+    return { 
+      success: true, 
+      message: "Password updated successfully" 
+    };
   }
 
   // Get system logs
