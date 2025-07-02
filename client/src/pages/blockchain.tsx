@@ -57,7 +57,7 @@ export default function Blockchain() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("none");
   const [selectedNetwork, setSelectedNetwork] = useState("ethereum");
   const [selectedRightType, setSelectedRightType] = useState("copyright");
   const [isProtecting, setIsProtecting] = useState(false);
@@ -69,15 +69,15 @@ export default function Blockchain() {
 
   const { data: project } = useQuery({
     queryKey: ["/api/projects", selectedProjectId],
-    queryFn: () => selectedProjectId ? api.getProject(parseInt(selectedProjectId)) : null,
-    enabled: !!selectedProjectId,
+    queryFn: () => selectedProjectId && selectedProjectId !== "none" ? api.getProject(parseInt(selectedProjectId)) : null,
+    enabled: !!selectedProjectId && selectedProjectId !== "none",
   });
 
   const { data: blockchainAssets } = useQuery({
     queryKey: ["/api/projects", selectedProjectId, "blockchain"],
-    queryFn: () => selectedProjectId ? 
+    queryFn: () => selectedProjectId && selectedProjectId !== "none" ? 
       fetch(`/api/projects/${selectedProjectId}/blockchain`).then(res => res.json()) : [],
-    enabled: !!selectedProjectId,
+    enabled: !!selectedProjectId && selectedProjectId !== "none",
   });
 
   const protectMutation = useMutation({
@@ -110,7 +110,7 @@ export default function Blockchain() {
   });
 
   const handleProtectRights = async () => {
-    if (!selectedProjectId) {
+    if (!selectedProjectId || selectedProjectId === "none") {
       toast({
         title: "Error",
         description: "Please select a project to protect.",
@@ -179,7 +179,7 @@ export default function Blockchain() {
           actions={
             <Button 
               onClick={handleProtectRights}
-              disabled={!selectedProjectId || isProtecting || protectMutation.isPending}
+              disabled={!selectedProjectId || selectedProjectId === "none" || isProtecting || protectMutation.isPending}
               className="bg-purple-600 hover:bg-purple-700 text-white"
             >
               {isProtecting || protectMutation.isPending ? (
@@ -212,6 +212,7 @@ export default function Blockchain() {
                   <SelectValue placeholder="Choose a project for blockchain protection" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Choose a project...</SelectItem>
                   {projects?.map((project) => (
                     <SelectItem key={project.id} value={project.id.toString()}>
                       {project.title} ({project.wordCount.toLocaleString()} words)
@@ -222,7 +223,7 @@ export default function Blockchain() {
             </CardContent>
           </Card>
 
-          {selectedProjectId && project && (
+          {selectedProjectId && selectedProjectId !== "none" && project && (
             <Tabs defaultValue="protect" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="protect">Protect Rights</TabsTrigger>
@@ -250,10 +251,7 @@ export default function Blockchain() {
                           <SelectContent>
                             {networks.map((network) => (
                               <SelectItem key={network.name.toLowerCase()} value={network.name.toLowerCase()}>
-                                <div className="flex items-center space-x-2">
-                                  <i className={`${network.icon} ${network.color}`}></i>
-                                  <span>{network.name}</span>
-                                </div>
+                                {network.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -272,10 +270,7 @@ export default function Blockchain() {
                           <SelectContent>
                             {rightTypes.map((right) => (
                               <SelectItem key={right.value} value={right.value}>
-                                <div>
-                                  <div>{right.label}</div>
-                                  <div className="text-xs text-gray-500 dark:text-gray-400">{right.description}</div>
-                                </div>
+                                {right.label}
                               </SelectItem>
                             ))}
                           </SelectContent>

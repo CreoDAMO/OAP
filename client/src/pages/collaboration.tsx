@@ -92,8 +92,8 @@ export default function Collaboration() {
   const queryClient = useQueryClient();
   
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedGenre, setSelectedGenre] = useState("");
-  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("all");
+  const [selectedRole, setSelectedRole] = useState("all");
   const [selectedCollaborator, setSelectedCollaborator] = useState<any>(null);
   const [inviteMessage, setInviteMessage] = useState("");
 
@@ -114,10 +114,10 @@ export default function Collaboration() {
       collaborator.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
       collaborator.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesGenre = selectedGenre === "" || 
+    const matchesGenre = selectedGenre === "all" || 
       collaborator.specialty.toLowerCase().includes(selectedGenre.toLowerCase());
     
-    const matchesRole = selectedRole === "" || 
+    const matchesRole = selectedRole === "all" || 
       collaborator.role.toLowerCase().includes(selectedRole.toLowerCase());
     
     return matchesSearch && matchesGenre && matchesRole;
@@ -193,7 +193,7 @@ export default function Collaboration() {
                       <SelectValue placeholder="All roles" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All roles</SelectItem>
+                      <SelectItem value="all">All roles</SelectItem>
                       {collaborationTypes.map((type) => (
                         <SelectItem key={type.value} value={type.label}>
                           {type.label}
@@ -209,7 +209,7 @@ export default function Collaboration() {
                       <SelectValue placeholder="All genres" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All genres</SelectItem>
+                      <SelectItem value="all">All genres</SelectItem>
                       {genres.map((genre) => (
                         <SelectItem key={genre} value={genre}>
                           {genre}
