@@ -507,7 +507,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Panel Routes (Protected)
-  app.get("/api/admin/overview", async (req, res) => {
+  app.get("/api/admin/overview", adminAgentLimiter, async (req, res) => {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
       const decoded = jwt.verify(token, JWT_SECRET) as any;
@@ -524,7 +524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/finances", async (req, res) => {
+  app.get("/api/admin/finances", adminAgentLimiter, async (req, res) => {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
       const decoded = jwt.verify(token, JWT_SECRET) as any;
