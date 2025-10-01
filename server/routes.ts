@@ -487,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
   const jwt = require('jsonwebtoken');
 
-  app.post("/api/admin/login", async (req, res) => {
+  app.post("/api/admin/login", adminAgentLimiter, async (req, res) => {
     try {
       const { email, password } = req.body;
       const { adminSystem } = await import('./admin');
