@@ -569,7 +569,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Agent Kit routes
-  app.get("/api/admin/agent/status", async (req, res) => {
+  app.get("/api/admin/agent/status", adminAgentLimiter, async (req, res) => {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
       const decoded = jwt.verify(token, JWT_SECRET) as any;
