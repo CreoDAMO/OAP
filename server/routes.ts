@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import rateLimit from "express-rate-limit";
 import { storage } from "./storage";
 import { analyzeText, generateText, improveText } from "./ai";
 import { insertProjectSchema, insertAnalysisSchema, insertRoyaltyCalculationSchema } from "@shared/schema";
@@ -7,6 +8,26 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Mock user for development - in production this would come from authentication
+
+  // Rate limiter for admin agent actions (very strict, e.g., 5 requests per 5 minutes)
+  const adminAgentLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 5, // Max 5 requests per window
+    keyGenerator: (req) => {
+      // Limit per admin email if possible, else by IP
+      const auth = req.headers.authorization?.replace('Bearer ', '');
+      try {
+        const decoded: any = auth ? require('jsonwebtoken').verify(auth, JWT_SECRET) : null;
+        if (decoded && decoded.email) return decoded.email;
+      } catch (_) { }
+      return req.ip;
+    },
+    handler: (req, res) => {
+      res.status(429).json({
+        message: "Too many agent actions requested. Please wait and try again later."
+      });
+    }
+  });
   const MOCK_USER_ID = 1;
 
   // User routes
@@ -586,7 +607,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/agent/execute", async (req, res) => {
+  app.post("/api/admin/agent/execute", adminAgentLimiter, async (req, res) => {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
       const decoded = jwt.verify(token, JWT_SECRET) as any;
