@@ -541,7 +541,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/distribute", async (req, res) => {
+  app.post("/api/admin/distribute", adminAgentLimiter, async (req, res) => {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
       const decoded = jwt.verify(token, JWT_SECRET) as any;
