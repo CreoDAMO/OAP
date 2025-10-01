@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import Anthropic from '@anthropic-ai/sdk';
+import * as crypto from 'crypto';
 
 // Multi-model AI support with fallback handling
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ 
@@ -194,7 +195,8 @@ export async function generateText(prompt: string, style?: string): Promise<stri
 
 // Advanced Co-Writing Functions
 export async function startCoWritingSession(userId: number, projectId: number, context: string, preferredModel: string = 'openai'): Promise<CoWritingSession> {
-  const sessionId = `cowrite_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const randomSuffix = crypto.randomBytes(9).toString('hex');
+  const sessionId = `cowrite_${Date.now()}_${randomSuffix}`;
   
   return {
     sessionId,
